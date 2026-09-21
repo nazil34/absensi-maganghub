@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Absen Maganghub
 
-## Getting Started
+Generator laporan harian magang berbasis AI. Cukup tulis catatan kegiatan secara singkat dan informal, lalu aplikasi akan menyusunnya menjadi tiga bagian laporan: **Uraian Aktivitas**, **Pembelajaran yang Diperoleh**, dan **Kendala yang Dialami**.
 
-First, run the development server:
+Hasil laporan dapat langsung diedit, disalin, dan ditempelkan ke form logbook Maganghub.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 📌 Latar Belakang
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Peserta magang di Maganghub perlu mengisi logbook harian yang terdiri dari uraian kegiatan, pembelajaran yang diperoleh, dan kendala yang dialami. Setiap bagian memiliki ketentuan minimal 100 karakter.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Menulis laporan dengan format tersebut setiap hari dapat memakan waktu, terutama ketika catatan kegiatan yang tersedia masih berupa poin-poin singkat. Mengandalkan prompting manual ke AI juga kurang efisien karena pengguna perlu menuliskan instruksi yang sama berulang kali.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**Absen Maganghub** dibuat untuk mengotomatisasi proses tersebut. Pengguna cukup memasukkan catatan kegiatan sehari-hari, baik dalam bentuk singkat maupun informal. AI kemudian mengolahnya menjadi laporan yang lebih terstruktur dan memenuhi ketentuan minimal karakter.
 
-## Learn More
+## ⚙️ Cara Kerja
 
-To learn more about Next.js, take a look at the following resources:
+1. Isi kolom **Aktivitas** dengan catatan kegiatan hari ini. Catatan dapat ditulis secara singkat dan informal.
+2. Isi kolom **Pembelajaran** dan **Kendala** jika ada. Kedua kolom ini bersifat opsional.
+3. Klik **Buat Laporan**. Data akan dikirim ke endpoint `POST /api/generate`, kemudian diproses menggunakan Groq dengan model yang ditentukan melalui environment variable.
+4. AI menghasilkan tiga bagian laporan: **Uraian Aktivitas**, **Pembelajaran yang Diperoleh**, dan **Kendala yang Dialami**.
+5. Jika salah satu bagian belum memenuhi batas minimal 100 karakter, sistem akan menjalankan proses **repair** satu kali untuk memperbaiki hasil tersebut.
+6. Hasil laporan dapat diedit secara langsung, dibuat ulang menggunakan fitur **Regenerate**, atau disalin untuk digunakan pada form logbook Maganghub.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## ✨ Fitur
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- ✍️ Mengubah catatan kegiatan informal menjadi laporan yang lebih terstruktur
+- 🤖 Generasi laporan menggunakan AI melalui Groq API
+- 📋 Menghasilkan tiga bagian laporan secara otomatis
+- 🔄 Regenerate laporan
+- ✏️ Mengedit hasil laporan secara langsung
+- 📏 Validasi minimal 100 karakter untuk setiap bagian
+- 🛡️ Validasi input dan output menggunakan Zod
+- 🚦 Rate limiting sederhana berdasarkan IP
+- 🔒 Tidak memerlukan login atau database
+- 💾 Tidak menyimpan riwayat laporan
 
-## Deploy on Vercel
+## 🛠️ Stack
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Next.js 16** dengan App Router
+- **TypeScript**
+- **Tailwind CSS 4**
+- **Groq API** (`chat/completions` dengan JSON mode)
+- **Zod** untuk validasi input dan output
+- **In-memory rate limiting** berdasarkan IP untuk membatasi request pada single-instance deployment
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📁 Struktur Proyek
+
+```text
+app/
+  page.tsx                 # Halaman utama: form dan hasil laporan
+  api/
+    generate/
+      route.ts             # Endpoint untuk memproses request dan memanggil Groq
+
+components/                # Komponen UI: form, hasil laporan, tombol, counter, alert
+
+lib/
+  groq/                    # Groq client serta logic generate dan repair laporan
+  prompt/                  # System prompt dan prompt builder
+  validation/              # Skema Zod untuk request dan output model
+
+types/
+  report.ts                # Tipe data request dan response
